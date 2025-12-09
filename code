@@ -1,0 +1,117 @@
+
+#include <Servo.h>
+
+#define M1_RUN 10
+#define M1_1 2
+#define M1_2 3
+
+#define M2_RUN 11
+#define M2_1 4
+#define M2_2 5
+#define STEPS 116
+#define POT A3
+#define BTNS A2
+ Servo leftClaw;
+   Servo rightClaw;
+int speed = 0;
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(M1_RUN, 1);
+  pinMode(M1_1, 1);
+  pinMode(M1_2, 1);
+  
+  pinMode(M2_RUN, 1);
+  pinMode(M2_1, 1);
+  pinMode(M2_2, 1);
+  
+  pinMode(POT, 0);
+  pinMode(BTNS, 0);
+  
+  leftClaw.attach(9);
+  rightClaw.attach(8);
+ 
+}
+
+void loop()
+{
+  int data_pot = analogRead(POT);
+  speed = map(data_pot, 0, 1023, 255, 0);
+  analogWrite(M1_RUN,speed);
+  analogWrite(M2_RUN,speed);
+  Serial.println(analogRead(A2));
+  if(analogRead(A2)==1023){
+  digitalWrite(M1_1, 1);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 1);
+  digitalWrite(M2_2, 0);
+ }
+  if(analogRead(A2)==0){
+  digitalWrite(M1_1, 0);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 0);
+  digitalWrite(M2_2, 0);
+ }    
+  if(analogRead(A2)==222){
+  digitalWrite(M1_1, 0);
+  digitalWrite(M1_2, 1); 
+  digitalWrite(M2_1, 0);
+  digitalWrite(M2_2, 1);
+ }
+  if(analogRead(A2)==0){
+  digitalWrite(M1_1, 0);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 0);
+  digitalWrite(M2_2, 0);
+ }    
+  if(analogRead(A2)==426){
+  digitalWrite(M1_1, 1);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 0);
+  digitalWrite(M2_2, 1);
+ }
+  if(analogRead(A2)==0){
+digitalWrite(M1_1, 0);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 0);
+  digitalWrite(M2_2, 0);
+ }  
+  if(analogRead(A2)==667){
+  digitalWrite(M1_1, 0);
+  digitalWrite(M1_2, 1); 
+  digitalWrite(M2_1, 1);
+  digitalWrite(M2_2, 0);
+ }
+  if(analogRead(A2)==0){
+digitalWrite(M1_1, 0);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 0);
+  digitalWrite(M2_2, 0);
+ }  
+  
+  leftClaw.write(180);
+}
+int Rclaw(int deg){
+  rightClaw.write(deg);
+  delay(1000);
+//  return rightClaw.read();
+}
+int Lclaw(int deg){
+  leftClaw.write(deg);
+  delay(1000);
+ // return leftClaw.read();
+}
+     void frontleft(){
+  analogWrite(M1_RUN,speed - (speed*0.2));
+  digitalWrite(M1_1, 1);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 1);
+  digitalWrite(M2_2, 0);
+  }
+  void frontright(){
+  analogWrite(M2_RUN,speed - (speed*0.2));
+  digitalWrite(M1_1, 1);
+  digitalWrite(M1_2, 0); 
+  digitalWrite(M2_1, 1);
+  digitalWrite(M2_2, 0);
+  }
