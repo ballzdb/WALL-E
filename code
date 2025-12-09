@@ -1,6 +1,6 @@
-
 #include <Servo.h>
 
+// Motor and control pin definitions
 #define M1_RUN 10
 #define M1_1 2
 #define M1_2 3
@@ -8,110 +8,130 @@
 #define M2_RUN 11
 #define M2_1 4
 #define M2_2 5
-#define STEPS 116
-#define POT A3
-#define BTNS A2
- Servo leftClaw;
-   Servo rightClaw;
+
+#define POT A3       // Potentiometer pin
+#define BTNS A2      // Button analog pin
+
+// Other hardware constants
+#define LEFT_CLAW_PIN 9
+#define RIGHT_CLAW_PIN 8
+
+Servo leftClaw;
+Servo rightClaw;
 int speed = 0;
+
 void setup()
 {
   Serial.begin(9600);
-  pinMode(M1_RUN, 1);
-  pinMode(M1_1, 1);
-  pinMode(M1_2, 1);
-  
-  pinMode(M2_RUN, 1);
-  pinMode(M2_1, 1);
-  pinMode(M2_2, 1);
-  
-  pinMode(POT, 0);
-  pinMode(BTNS, 0);
-  
-  leftClaw.attach(9);
-  rightClaw.attach(8);
- 
+
+  // Motor pins
+  pinMode(M1_RUN, OUTPUT);
+  pinMode(M1_1, OUTPUT);
+  pinMode(M1_2, OUTPUT);
+  pinMode(M2_RUN, OUTPUT);
+  pinMode(M2_1, OUTPUT);
+  pinMode(M2_2, OUTPUT);
+
+  // Input pins
+  pinMode(POT, INPUT);
+  pinMode(BTNS, INPUT);
+
+  // Servos
+  leftClaw.attach(LEFT_CLAW_PIN);
+  rightClaw.attach(RIGHT_CLAW_PIN);
 }
 
 void loop()
 {
+  // Read potentiometer and set speed inversely
   int data_pot = analogRead(POT);
   speed = map(data_pot, 0, 1023, 255, 0);
-  analogWrite(M1_RUN,speed);
-  analogWrite(M2_RUN,speed);
-  Serial.println(analogRead(A2));
-  if(analogRead(A2)==1023){
-  digitalWrite(M1_1, 1);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 1);
-  digitalWrite(M2_2, 0);
- }
-  if(analogRead(A2)==0){
-  digitalWrite(M1_1, 0);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 0);
-  digitalWrite(M2_2, 0);
- }    
-  if(analogRead(A2)==222){
-  digitalWrite(M1_1, 0);
-  digitalWrite(M1_2, 1); 
-  digitalWrite(M2_1, 0);
-  digitalWrite(M2_2, 1);
- }
-  if(analogRead(A2)==0){
-  digitalWrite(M1_1, 0);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 0);
-  digitalWrite(M2_2, 0);
- }    
-  if(analogRead(A2)==426){
-  digitalWrite(M1_1, 1);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 0);
-  digitalWrite(M2_2, 1);
- }
-  if(analogRead(A2)==0){
-digitalWrite(M1_1, 0);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 0);
-  digitalWrite(M2_2, 0);
- }  
-  if(analogRead(A2)==667){
-  digitalWrite(M1_1, 0);
-  digitalWrite(M1_2, 1); 
-  digitalWrite(M2_1, 1);
-  digitalWrite(M2_2, 0);
- }
-  if(analogRead(A2)==0){
-digitalWrite(M1_1, 0);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 0);
-  digitalWrite(M2_2, 0);
- }  
-  
+  analogWrite(M1_RUN, speed);
+  analogWrite(M2_RUN, speed);
+
+  int btn_state = analogRead(BTNS); // Read button analog value once
+
+  Serial.println(btn_state);
+
+  // Motor direction control via button analog values
+  switch (btn_state) {
+    case 1023:
+      // Forward
+      digitalWrite(M1_1, HIGH);
+      digitalWrite(M1_2, LOW);
+      digitalWrite(M2_1, HIGH);
+      digitalWrite(M2_2, LOW);
+      break;
+    case 222:
+      // Backward
+      digitalWrite(M1_1, LOW);
+      digitalWrite(M1_2, HIGH);
+      digitalWrite(M2_1, LOW);
+      digitalWrite(M2_2, HIGH);
+      break;
+    case 426:
+      // Left Turn
+      digitalWrite(M1_1, HIGH);
+      digitalWrite(M1_2, LOW);
+      digitalWrite(M2_1, LOW);
+      digitalWrite(M2_2, HIGH);
+      break;
+    case 667:
+      // Right Turn
+      digitalWrite(M1_1, LOW);
+      digitalWrite(M1_2, HIGH);
+      digitalWrite(M2_1, HIGH);
+      digitalWrite(M2_2, LOW);
+      break;
+    case 0:
+    default:
+      // Stop
+      digitalWrite(M1_1, LOW);
+      digitalWrite(M1_2, LOW);
+      digitalWrite(M2_1, LOW);
+      digitalWrite(M2_2, LOW);
+      break;
+  }
+
+  // Example: Just open the left claw fully (customize as needed)
   leftClaw.write(180);
 }
-int Rclaw(int deg){
+
+// Move right claw to set degree, with short delay
+int Rclaw(int deg) {
   rightClaw.write(deg);
   delay(1000);
-//  return rightClaw.read();
 }
+
+// Move left claw to set degree, with short delay
 int Lclaw(int deg){
   leftClaw.write(deg);
   delay(1000);
- // return leftClaw.read();
 }
-     void frontleft(){
-  analogWrite(M1_RUN,speed - (speed*0.2));
-  digitalWrite(M1_1, 1);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 1);
-  digitalWrite(M2_2, 0);
-  }
-  void frontright(){
-  analogWrite(M2_RUN,speed - (speed*0.2));
-  digitalWrite(M1_1, 1);
-  digitalWrite(M1_2, 0); 
-  digitalWrite(M2_1, 1);
-  digitalWrite(M2_2, 0);
-  }
+
+// Move slight left turn (speed reduction for differential drive)
+void frontleft() {
+  analogWrite(M1_RUN, speed - (speed * 0.2));
+  digitalWrite(M1_1, HIGH);
+  digitalWrite(M1_2, LOW);
+  digitalWrite(M2_1, HIGH);
+  digitalWrite(M2_2, LOW);
+}
+
+// Move slight right turn (speed reduction for differential drive)
+void frontright() {
+  analogWrite(M2_RUN, speed - (speed * 0.2));
+  digitalWrite(M1_1, HIGH);
+  digitalWrite(M1_2, LOW);
+  digitalWrite(M2_1, HIGH);
+  digitalWrite(M2_2, LOW);
+}
+
+/*
+ * Comments:
+ * - Uses one analogRead for button state to simplify logic.
+ * - Direction logic switched to a `switch` statement for clarity and maintainability.
+ * - Pin modes clearly set.
+ * - Constants used for pin assignments.
+ * - Claw functions provided, though you may expand usage in loop or via additional triggers. 
+ */
